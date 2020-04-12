@@ -1,0 +1,10 @@
+{
+    "ignore": [
+      "node_modules"
+    ],
+    "watch": [
+      "./"
+    ],
+    "exec": "node --inspect-brk index.js",
+    "ext": "js"
+  }
