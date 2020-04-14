@@ -5,6 +5,6 @@
     "watch": [
       "./"
     ],
-    "exec": "node --inspect-brk index.js",
+    "exec": "node --inspect-brk index2.js",
     "ext": "js"
   }
