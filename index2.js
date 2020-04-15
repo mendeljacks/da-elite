@@ -66,7 +66,7 @@ const dbConfig = {
             return { package: package.package_name, contributors }
         })).then(r => r.filter(el => el))
 
-
+        if (package_contributors.length === 0) continue
 
         const queryString = mysql.format(`
         INSERT INTO db.contributors (avatar_url,login) 

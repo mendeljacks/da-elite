@@ -39,7 +39,7 @@ const dbConfig = {
     const [{ count }] = await pool.query(`
     select count(*) as count from db.packages where github_url is null
     `)
-    const page_size = 1
+    const page_size = 100
     const page_count = Math.ceil(count / page_size)
     for (let page_number = 0; page_number < page_count; page_number++) {
         const packages = await pool.query(`
