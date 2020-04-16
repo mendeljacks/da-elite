@@ -4,7 +4,7 @@ const faceapi = require('face-api.js')
 var mysql = require('promise-mysql');
 const { Canvas, Image, ImageData } = canvas
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
-
+const ora = require('ora');
 const r4 = num => (num||0).toFixed(4)
 const r0 = num => (num||0).toFixed(0)
 
@@ -39,8 +39,9 @@ const dbConfig = {
     `)
     const page_size = 10
     const page_count = Math.ceil(count / page_size)
+    const spinner = ora('Loading...').start();
     for (let page_number = 0; page_number < page_count; page_number++) {
-        console.log(page_number, page_count)
+        spinner.text = `ai ${page_number} / ${page_count} pages`
 
         const contributors = await pool.query(`
         SELECT id, avatar_url, login FROM db.contributors where avatar_url is not null and checked_picture is null

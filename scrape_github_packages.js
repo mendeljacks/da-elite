@@ -1,7 +1,7 @@
 const axios = require('axios')
 var mysql = require('promise-mysql');
 const stopcock = require('stopcock');
-
+const ora = require('ora');
 
 const token = '4e7e29d28dbbfdf86596f8a70c9eb711f3a4def3';
 const ax_get = url => {
@@ -36,7 +36,10 @@ const dbConfig = {
     `)
     const page_size = 10
     const page_count = Math.ceil(count / page_size)
+    const spinner = ora('Loading...').start();
     for (let page_number = 0; page_number < page_count; page_number++) {
+        spinner.text = `github ${page_number} / ${page_count} pages`
+
         const packages = await pool.query(`
             select * from db.packages where github_url is not null and github_url != '' and scraped_contributors is null
             limit ${page_size} offset ${page_number * page_size}
@@ -93,7 +96,6 @@ const dbConfig = {
         const queryString2 = mysql.format('update db.packages set scraped_contributors = 1 where package_name in (?)', [package_contributors.map(el => el.package)])
         await pool.query(queryString2)
 
-        console.log(page_number, page_count)
     }
 
 
