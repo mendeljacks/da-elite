@@ -1,77 +1,60 @@
-const axios = require('axios')
-var mysql = require('promise-mysql');
-const stopcock = require('stopcock');
-const ora = require('ora');
+var {format, escape} = require('promise-mysql')
+const cliProgress = require('cli-progress');
+const {get} = require('./config/github')
+const pool = require('./config/mysql');
 
-const token = '4e7e29d28dbbfdf86596f8a70c9eb711f3a4def3';
-const ax_get = url => {
-    return axios.get(url, { headers: { 'Authorization': `token ${token}` } })
-}
-const get = stopcock(ax_get, { bucketSize: 1, limit: 18, interval: 25000 });
 
-const dbConfig = {
-    connectionLimit: 20,
-    host: '34.95.55.192',
-    user: 'root',
-    password: '123',
-    multipleStatements: true,
-    timezone: 'utc',
-    dateStrings: 'date'
-};
 (async () => {
-    let pool = await mysql.createPool(dbConfig)
-    pool.on('connection', connection => {
-        connection.on('enqueue', function (sequence) {
-            if (sequence.sql) {
-                console.log(sequence.sql.slice(0,1000))
-            }
-
-        })
-    })
-
-
 
     const [{ count }] = await pool.query(`
-    select count(*) as count from db.packages where github_url is not null and github_url != '' and scraped_contributors is null
+        select count(*) as count 
+        from db.packages 
+        where github_url is not null 
+        and github_url != '' 
+        and scraped_contributors is null
     `)
     const page_size = 10
     const page_count = Math.ceil(count / page_size)
-    const spinner = ora('Loading...').start();
+    const multibar = new cliProgress.MultiBar({
+        format: 'progress [{bar}] {percentage}% | ETA: {eta_formatted} | {value}/{total}',
+        clearOnComplete: false,
+        hideCursor: true,
+    }, cliProgress.Presets.shades_grey);
+    const b1 = multibar.create(page_count, 0);
     for (let page_number = 0; page_number < page_count; page_number++) {
-        spinner.text = `github ${page_number} / ${page_count} pages`
-
+        b1.increment()
         const packages = await pool.query(`
-            select * from db.packages where github_url is not null and github_url != '' and scraped_contributors is null
+            select * from db.packages 
+            where github_url is not null 
+            and github_url != '' 
+            and scraped_contributors is null    
             limit ${page_size} offset ${page_number * page_size}
         `)
-
+        
+        const b2 = multibar.create(packages.length, 0);
         const package_contributors = await Promise.all(packages.map(async package => {
-            const url = package.github_url.replace(/^(github\.com)/, "https://api.github.com/repos") + '/contributors';
-            console.log('getting', url)
-            const response = await get(url).catch(err => {
-                if (err.response.status === 404) {
-                    return null
-                } else {
-                    return Promise.reject(err.response)
-                }
-            })
-            if (response === null) return null
+            const url = package.github_url.replace(/#readme/,'').replace(/^(github\.com)/, "https://api.github.com/repos") + '/contributors';
+            const response = await get(url)
+            b2.increment()
+            if (Object.keys(response).length === 0) return null
             var contributors = response.data
             if (response.headers.link) {
                 const { last, next, prev, first } = parser(response.headers.link)
+                const b3 = multibar.create(last, 0);
                 for (let i = 2; i <= last; i++) {
                     let paginated_url = url + `?page=${i}`
-                    console.log('getting', paginated_url)
                     const { data } = await get(paginated_url)
                     contributors = [...contributors, ...data]
+                    b3.increment()
                 }
+                multibar.remove(b3)
             }
             return { package: package.package_name, contributors }
         })).then(r => r.filter(el => el))
-
+        multibar.remove(b2)
         if (package_contributors.length === 0) continue
 
-        const queryString = mysql.format(`
+        const queryString = format(`
         INSERT INTO db.contributors (avatar_url,login) 
         VALUES ?
         ON DUPLICATE KEY UPDATE contributors.avatar_url = VALUES(contributors.avatar_url);
@@ -79,7 +62,10 @@ const dbConfig = {
         INSERT INTO db.package_has_contributors (package_id,contributor_id) 
         VALUES ${  package_contributors.reduce((acc, val) => {
             for (let i = 0; i < val.contributors.length; i++) {
-                acc.push(`((select id from db.packages where package_name = '${val.package}'), (select id from db.contributors where login = '${val.contributors[i].login}'))`)
+                acc.push(`(
+                    (select id from db.packages where package_name = '${val.package}'), 
+                    (select id from db.contributors where login = '${val.contributors[i].login}')
+                )`)
             }
             return acc
         }, [])}
@@ -93,7 +79,7 @@ const dbConfig = {
         ])
 
         await pool.query(queryString)
-        const queryString2 = mysql.format('update db.packages set scraped_contributors = 1 where package_name in (?)', [package_contributors.map(el => el.package)])
+        const queryString2 = format('update db.packages set scraped_contributors = 1 where package_name in (?)', [package_contributors.map(el => el.package)])
         await pool.query(queryString2)
 
     }
