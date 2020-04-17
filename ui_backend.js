@@ -26,6 +26,7 @@ var pool = null;
 })()
 
 app.use(cors())
+app.use(express.json())
 var criteria = `
 WHERE checked_picture = 1 
 and gender is not null
@@ -71,12 +72,20 @@ app.get('/stats', async function (req, res) {
     `)
     res.status(200).json(response)
 })
-app.post('/notes', async function (req, res) {
-    const human_contact_notes = req.body.human_contact_notes
+app.patch('/notes', async function (req, res) {
+    const human_contact_notes = req.body.note
     const id = req.body.id
-    const [response] = await pool.query(`
+    const response = await pool.query(`
     update db.contributors set human_contact_notes = ? where id = ?
     `,[human_contact_notes, id])
+    res.status(200).json(response)
+})
+app.patch('/approve', async function (req, res) {
+    const human_approved = req.body.human_approved
+    const id = req.body.id
+    const response = await pool.query(`
+    update db.contributors set human_approved = ? where id = ?
+    `,[human_approved, id])
     res.status(200).json(response)
 })
  

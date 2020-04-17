@@ -8,6 +8,7 @@ const { Canvas, Image, ImageData } = canvas
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
 const r4 = num => (num || 0).toFixed(4)
 const r0 = num => (num || 0).toFixed(0);
+console.clear();
 (async () => {
     await faceapi.nets.ssdMobilenetv1.loadFromDisk('./weights')
     await faceapi.nets.faceExpressionNet.loadFromDisk('./weights')

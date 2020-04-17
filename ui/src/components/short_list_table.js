@@ -9,19 +9,39 @@ import { InputTextarea } from 'primereact/inputtextarea';
 class ShortListTable extends Component {
     state = {
         getting_contributors: false,
-        contributors: [],
+        contributors: {},
         offset: 0,
         limit: 20,
         row_count: 0,
         search_terms: [],
     }
     edit_note = async (id, note) => {
-        this.setState(state => {
+        await this.setState(state => {
+            ((state.contributors || {})[id] || {})['human_contact_notes'] = note
             return state
         })
     }
     save_note = async (id, note) => {
-
+        this.setState(state => {
+            ((state.contributors || {})[id] || {})['saving_note'] = true
+            return state
+        })
+        await axios.patch('http://localhost:4500/notes', { id, note })
+        this.setState(state => {
+            ((state.contributors || {})[id] || {})['saving_note'] = false
+            return state
+        })
+    }
+    human_approved = async (id, human_approved) => {
+        await axios.patch('http://localhost:4500/approve', { id, human_approved })
+        await this.setState(state => {
+            delete state.contributors[id]
+            return state
+        })
+        // this.setState(state => {
+        //     ((state.contributors||{})[id]||{})['saving_note'] = false
+        //     return state
+        // })
     }
     get_contributors = async (offset, limit) => {
         this.setState({ getting_contributors: true })
@@ -32,7 +52,7 @@ class ShortListTable extends Component {
         this.setState({
             getting_contributors: false,
             row_count: row_count,
-            contributors: responses[0].data.contributors,
+            contributors: responses[0].data.contributors.reduce((acc, val) => { acc[val.id] = val; return acc }, {}),
         })
         this.props.on_count(row_count)
 
@@ -44,7 +64,7 @@ class ShortListTable extends Component {
         return (
             <DataTable
                 // header={this.render_header()}
-                value={this.state.contributors}
+                value={Object.values(this.state.contributors)}
                 // loading={this.state.getting_contributors}
                 sortOrder={-1}
                 sortMode='multiple'
@@ -100,30 +120,37 @@ class ShortListTable extends Component {
                 {/* <Column field="bio" header="bio" /> */}
                 <Column field="action" header="Action" body={(row, column) => {
                     return (<div>
-                        <Button
+                        {this.props.human_approved !== 1 && <Button
                             style={{ margin: '2px' }}
-                            onClick={() => { }}
+                            onClick={() => { this.human_approved(row.id, 1) }}
                             label={`Accept`}
                             className="p-button-success p-button-rounded"
-                        />
-                        <Button
+                        />}
+                        {this.props.human_approved !== 0 && <Button
                             style={{ margin: '2px' }}
-                            onClick={() => { }}
+                            onClick={() => { this.human_approved(row.id, 0) }}
                             label={'Reject'}
                             className="p-button-danger p-button-rounded"
-                        />
+                        />}
+                        {this.props.human_approved !== null && <Button
+                            style={{ margin: '2px' }}
+                            onClick={() => { this.human_approved(row.id, null) }}
+                            label={'Reconsider'}
+                            className="p-button-secondary p-button-rounded"
+                        />}
                     </div>)
                 }} />
                 <Column field="human_contact_notes" header="Notes" body={(r, c) => {
-                    return (<div>
+                    return (<div key={r.id}>
                         <InputTextarea rows={5} cols={30}
-                            value={r.notes}
+                            value={r.human_contact_notes}
                             onChange={(e) => this.edit_note(r.id, e.target.value)} />
                         <br />
                         <Button
                             style={{ margin: '2px' }}
-                            onClick={() => {    this.save_note(r.id, r.notes) }}
-                            label={'Save note'}
+                            onClick={() => { this.save_note(r.id, r.human_contact_notes) }}
+                            label={r.saving_note ? 'Saving...' : 'Save note'}
+                            disabled={r.saving_note ? true : false}
                             className="p-button-secondary p-button-rounded"
                         />
                     </div>)

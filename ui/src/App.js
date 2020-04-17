@@ -63,14 +63,14 @@ export default class App extends Component {
         {this.state.getting_contributors && <ProgressBar mode="indeterminate" />}
         <Card title="Shortlist">
           <TabView>
-            <TabPanel header={`Waiting ${this.state.waiting ? `(${this.state.waiting})` : ``}`}>
-              <ShortListTable on_count={num=>this.setState({waiting:num})} human_approved={null}></ShortListTable>
+            <TabPanel human_approved={null} header={`Waiting ${this.state.waiting ? `(${this.state.waiting})` : ``}`}>
+              <ShortListTable on_count={num => this.setState({ waiting: num })} human_approved={null}></ShortListTable>
             </TabPanel>
-            <TabPanel header={`Approved ${this.state.approved ? `(${this.state.approved})` : ``}`}>
-              <ShortListTable on_count={num=>this.setState({approved:num})} human_approved={1}></ShortListTable>
+            <TabPanel human_approved={1} header={`Approved ${this.state.approved ? `(${this.state.approved})` : ``}`}>
+              <ShortListTable on_count={num => this.setState({ approved: num })} human_approved={1}></ShortListTable>
             </TabPanel>
-            <TabPanel header={`Rejected ${this.state.rejected ? `(${this.state.rejected})` : ``}`}>
-              <ShortListTable on_count={num=>this.setState({rejected:num})} human_approved={0}></ShortListTable>
+            <TabPanel human_approved={0} header={`Rejected ${this.state.rejected ? `(${this.state.rejected})` : ``}`}>
+              <ShortListTable on_count={num => this.setState({ rejected: num })} human_approved={0}></ShortListTable>
             </TabPanel>
           </TabView>
 

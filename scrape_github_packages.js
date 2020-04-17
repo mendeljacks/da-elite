@@ -2,7 +2,7 @@ var {format, escape} = require('promise-mysql')
 const cliProgress = require('cli-progress');
 const {get} = require('./config/github')
 const pool = require('./config/mysql');
-
+console.clear();
 
 (async () => {
 
@@ -16,13 +16,13 @@ const pool = require('./config/mysql');
     const page_size = 10
     const page_count = Math.ceil(count / page_size)
     const multibar = new cliProgress.MultiBar({
-        format: 'progress [{bar}] {percentage}% | ETA: {eta_formatted} | {value}/{total}',
+        format: 'progress [{bar}] {percentage}% | ETA: {eta_formatted} | {value}/{total} | {custom_val}',
         clearOnComplete: false,
         hideCursor: true,
     }, cliProgress.Presets.shades_grey);
     const b1 = multibar.create(page_count, 0);
     for (let page_number = 0; page_number < page_count; page_number++) {
-        b1.increment()
+        b1.increment(1,{custom_val: ''})
         const packages = await pool.query(`
             select * from db.packages 
             where github_url is not null 
@@ -33,9 +33,9 @@ const pool = require('./config/mysql');
         
         const b2 = multibar.create(packages.length, 0);
         const package_contributors = await Promise.all(packages.map(async package => {
-            const url = package.github_url.replace(/#readme/,'').replace(/^(github\.com)/, "https://api.github.com/repos") + '/contributors';
+            const url = package.github_url.replace(/^bgrins./,'').replace(/#readme/,'').replace(/^(github\.com)/, "https://api.github.com/repos") + '/contributors';
             const response = await get(url)
-            b2.increment()
+            b2.increment(1,{custom_val: package.package_name})
             if (Object.keys(response).length === 0) return null
             var contributors = response.data
             if (response.headers.link) {
