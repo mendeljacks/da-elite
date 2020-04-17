@@ -38,6 +38,7 @@ app.get('/shortlist', async function (req, res) {
         select count(*) as count 
         from db.contributors 
         ${criteria}
+        and ${req.query.human_approved === 'null' ? 'human_approved is null' : `human_approved = ${req.query.human_approved}`}
         ;
 
         select *, (
@@ -50,6 +51,7 @@ app.get('/shortlist', async function (req, res) {
             ) as packages 
         from db.contributors 
         ${criteria}
+        and ${req.query.human_approved === 'null' ? 'human_approved is null' : `human_approved = ${req.query.human_approved}`}
         order by happy desc
         limit ${req.query.limit || 10} offset ${req.query.offset || 0} 
     `)
@@ -67,6 +69,14 @@ app.get('/stats', async function (req, res) {
     (select count(*) as stage from db.contributors where checked_picture = 1 and checked_person = 1) as 'short_list_ready',
     (select count(*) as stage from db.contributors ${criteria}) as 'shortlisted_people'
     `)
+    res.status(200).json(response)
+})
+app.post('/notes', async function (req, res) {
+    const human_contact_notes = req.body.human_contact_notes
+    const id = req.body.id
+    const [response] = await pool.query(`
+    update db.contributors set human_contact_notes = ? where id = ?
+    `,[human_contact_notes, id])
     res.status(200).json(response)
 })
  
