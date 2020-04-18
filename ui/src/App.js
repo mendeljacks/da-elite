@@ -51,7 +51,7 @@ export default class App extends Component {
             <tbody>
               <tr>
                 <td>{Number(this.state.stats['found_packages']).toLocaleString()} / {Number(this.state.stats['total_packages']).toLocaleString()}</td>
-                <td>{Number(this.state.stats['found_pop']).toLocaleString()} / {Number(this.state.stats['total_packages']).toLocaleString()}</td>
+                <td>{Number(this.state.stats['found_pop']).toLocaleString()} / {Number(this.state.stats['found_packages']).toLocaleString()}</td>
                 <td>{Number(this.state.stats['checked_people']).toLocaleString()} / {Number(this.state.stats['total_people']).toLocaleString()}</td>
                 <td>{Number(this.state.stats['checked_faces']).toLocaleString()} / {Number(this.state.stats['total_people']).toLocaleString()}</td>
                 <td>{Number(this.state.stats['shortlisted_people']).toLocaleString()} / {Number(this.state.stats['short_list_ready']).toLocaleString()}</td>

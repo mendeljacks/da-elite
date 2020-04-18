@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "1": "nodemon --inspect-brk=8888 scrape_npms.js",
+    "1_old": "nodemon --inspect-brk=8888 scrape_npms.js",
+    "1": "nodemon --inspect-brk=8888 scrape_npm_api.js",
     "2": "nodemon --inspect-brk=8889 scrape_github_packages.js",
     "3": "nodemon --inspect-brk=8890 detect_faces.js",
     "4": "nodemon --inspect-brk=8892 scrape_github_people.js",
