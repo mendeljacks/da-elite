@@ -17,7 +17,13 @@ const ax_get = url => {
         if (err.response && err.response.status === 404) {
             return {}
         } else {
-            return Promise.reject(err)
+            return axios.get(url).catch(err => {
+                if (err.response && err.response.status === 404) {
+                    return {}
+                } else {
+                    return Promise.reject(err)
+                }
+            })
         }
 
     })

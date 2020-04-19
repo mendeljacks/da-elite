@@ -6,7 +6,12 @@ function roundround(array, index) {
         return array[index++];
     };
 };
-const tokens = ['4e7e29d28dbbfdf86596f8a70c9eb711f3a4def3','fdbea0b6be493ee6d11387ef649baaf70612fddd','b74f02e8042c763ebbb614d8b51ecdae124cb302']
+const tokens = [
+    '4e7e29d28dbbfdf86596f8a70c9eb711f3a4def3',
+    'fdbea0b6be493ee6d11387ef649baaf70612fddd',
+    'b74f02e8042c763ebbb614d8b51ecdae124cb302',
+    'f7510ff0043a5124a0d00fcd8961ebc8348f5035' // sholom
+]
 const next_token = roundround(tokens)
 const axios = require('axios')
 const stopcock = require('stopcock')

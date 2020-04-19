@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "1_old": "nodemon --inspect-brk=8888 scrape_npms.js",
+    "0": "nodemon --inspect-brk=8887 zero.js",
     "1": "nodemon --inspect-brk=8888 scrape_npm_api.js",
     "2": "nodemon --inspect-brk=8889 scrape_github_packages.js",
     "3": "nodemon --inspect-brk=8890 detect_faces.js",
     "4": "nodemon --inspect-brk=8892 scrape_github_people.js",
+    "1_old": "nodemon --inspect-brk=8888 scrape_npms.js",
     "ui": "concurrently \"nodemon --inspect=8891 ui_backend.js\" \"cd ui && npm start\"",
     "test": "echo \"Error: no test specified\" && exit 1",
     "q": "taskkill /f /im node.exe",
@@ -19,6 +20,7 @@
   "dependencies": {
     "@tensorflow/tfjs-node": "^1.7.2",
     "all-the-package-names": "^1.3905.0",
+    "all-the-package-repos": "^1.357.97",
     "axios": "^0.19.2",
     "canvas": "^2.6.1",
     "cli-progress": "^3.7.0",

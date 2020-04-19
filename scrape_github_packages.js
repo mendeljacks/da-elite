@@ -33,7 +33,15 @@ console.clear();
         
         const b2 = multibar.create(packages.length, 0);
         const package_contributors = await Promise.all(packages.map(async package => {
-            const url = package.github_url.replace(/^bgrins./,'').replace(/#readme/,'').replace(/^(github\.com)/, "https://api.github.com/repos") + '/contributors';
+            const url = package.github_url
+            .replace(/^bgrins./,'')
+            .replace(/^gist./,'')
+            .replace(/^git\+/,'')
+            .replace(/^git:\/\//,'')
+            .replace(/#readme/,'')
+            .replace(/^(github\.com)/, "https://api.github.com/repos") 
+            .replace(/.git$/,'')
+            + '/contributors';
             const response = await get(url)
             b2.increment(1,{custom_val: package.package_name})
             if (Object.keys(response).length === 0) return null
